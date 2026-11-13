@@ -71,10 +71,58 @@ If your Hyprland session does not process XDG autostart entries, add one of thes
 o.launch_on_start("hyprland-dock")
 ```
 
+```lua
+-- Hyprland 0.55+ Lua config: ~/.config/hypr/hyprland.lua
+hl.on("hyprland.start", function()
+    hl.exec_cmd("hyprland-dock")
+end)
+```
+
 ```ini
-# Standard Hyprland: ~/.config/hypr/hyprland.conf
+# Older hyprlang config: ~/.config/hypr/hyprland.conf
 exec-once = hyprland-dock
 ```
+
+#### Keep it running with systemd (optional)
+
+A user service restarts the dock if it ever exits. Create `~/.config/systemd/user/hyprland-dock.service`:
+
+```ini
+[Unit]
+Description=Hyprland Dock
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/qs -n -p %h/.local/share/hyprland-dock
+Environment=HYPRLAND_DOCK_CONFIG=%h/.config/hyprland-dock/dock.json
+Restart=always
+RestartSec=1
+```
+
+Then disable the XDG autostart entry and start the service from Hyprland, so it inherits the Wayland environment:
+
+```bash
+hyprland-dock autostart disable
+hyprland-dock stop
+systemctl --user daemon-reload
+```
+
+```lua
+-- hyprland.lua
+hl.on("hyprland.start", function()
+    hl.exec_cmd("systemctl --user start hyprland-dock.service")
+end)
+```
+
+```ini
+# hyprland.conf
+exec-once = systemctl --user start hyprland-dock.service
+```
+
+#### Glass blur
+
+Add the `hyprland-dock` blur layer rule from [Glass effect](#glass-effect) to your Hyprland config, or the dock's background will be a flat tint.
 
 ### Update or remove
 
