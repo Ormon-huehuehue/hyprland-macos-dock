@@ -5,7 +5,7 @@ A lightweight macOS-inspired application dock for Hyprland, built with Quickshel
 > Fork of [nick-friedrich/hyprland-dock](https://github.com/nick-friedrich/hyprland-dock) with a more macOS-like feel:
 > frosted-glass styling, a subtle slide-and-fade auto-hide, and a dock that stays visible on empty workspaces.
 
-![Hyprland Dock running at the bottom of a Hyprland desktop](preview_2.png)
+![Glass dock at the bottom of a Hyprland desktop](preview.png)
 
 ## Features
 
@@ -29,8 +29,6 @@ A lightweight macOS-inspired application dock for Hyprland, built with Quickshel
 - Hyprland
 - Quickshell 0.3 or newer
 - A working freedesktop icon theme
-
-![Hyprland Dock running at the bottom of a Hyprland desktop](preview.png)
 
 ## Install
 
