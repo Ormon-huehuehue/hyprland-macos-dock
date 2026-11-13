@@ -92,7 +92,7 @@ case "${1:-}" in
     # tarball and unpacks it without executing anything from it.
     if [[ ! -f "$app_dir/install.sh" ]]; then
       echo "hyprland-dock: installer not found at $app_dir/install.sh" >&2
-      echo "Reinstall from https://github.com/nick-friedrich/hyprland-dock" >&2
+      echo "Reinstall from https://github.com/Ormon-huehuehue/hyprland-dock" >&2
       exit 1
     fi
     if [[ -f "$autostart_file" ]]; then

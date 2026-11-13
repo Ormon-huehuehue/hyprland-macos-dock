@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "io.github.nick-friedrich.hyprland-dock",
+  "id": "io.github.ormon-huehuehue.hyprland-dock",
   "name": "Hyprland Dock",
   "version": "1.1.1",
-  "author": "Nick Friedrich",
+  "author": "Ormon-huehuehue (fork of Nick Friedrich's hyprland-dock)",
   "license": "MIT",
   "description": "A configurable macOS-inspired application dock for Hyprland.",
   "kinds": [

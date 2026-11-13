@@ -2,6 +2,9 @@
 
 A lightweight macOS-inspired application dock for Hyprland, built with Quickshell and Qt/QML.
 
+> Fork of [nick-friedrich/hyprland-dock](https://github.com/nick-friedrich/hyprland-dock) with a more macOS-like feel:
+> frosted-glass styling, a subtle slide-and-fade auto-hide, and a dock that stays visible on empty workspaces.
+
 ![Hyprland Dock running at the bottom of a Hyprland desktop](preview_2.png)
 
 ## Features
@@ -15,7 +18,9 @@ A lightweight macOS-inspired application dock for Hyprland, built with Quickshel
 - Fuzzy application search for adding dock items
 - Configurable dock background transparency
 - Optional reserved screen space
-- Optional auto-hide with screen-edge reveal
+- Optional auto-hide with screen-edge reveal and a subtle slide/fade animation
+- Stays visible while the screen's workspace has no windows (`showOnEmptyWorkspace`)
+- Frosted-glass background (with a Hyprland blur layer rule, see below)
 - Live JSON configuration reload
 - Multi-monitor support
 
@@ -32,13 +37,13 @@ A lightweight macOS-inspired application dock for Hyprland, built with Quickshel
 Make sure Quickshell is installed, then run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nick-friedrich/hyprland-dock/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Ormon-huehuehue/hyprland-dock/master/install.sh | bash
 ```
 
 The installer uses only user directories, requires no `sudo`, and creates an XDG autostart entry. To install without autostart:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nick-friedrich/hyprland-dock/master/install.sh | bash -s -- --no-autostart
+curl -fsSL https://raw.githubusercontent.com/Ormon-huehuehue/hyprland-dock/master/install.sh | bash -s -- --no-autostart
 ```
 
 Run the dock immediately with:
@@ -93,22 +98,22 @@ hyprland-dock stop
 Then install and enable the plugin:
 
 ```bash
-omarchy plugin add https://github.com/nick-friedrich/hyprland-dock.git --enable
+omarchy plugin add https://github.com/Ormon-huehuehue/hyprland-dock.git --enable
 ```
 
 The plugin uses the same `~/.config/hyprland-dock/dock.json` configuration as the standalone version. On a plugin-only installation, create it from the bundled defaults:
 
 ```bash
 mkdir -p ~/.config/hyprland-dock
-cp ~/.config/omarchy/plugins/io.github.nick-friedrich.hyprland-dock/config/dock.json \
+cp ~/.config/omarchy/plugins/io.github.ormon-huehuehue.hyprland-dock/config/dock.json \
   ~/.config/hyprland-dock/dock.json
 ```
 
 Update or remove the plugin with:
 
 ```bash
-omarchy plugin update io.github.nick-friedrich.hyprland-dock
-omarchy plugin remove io.github.nick-friedrich.hyprland-dock
+omarchy plugin update io.github.ormon-huehuehue.hyprland-dock
+omarchy plugin remove io.github.ormon-huehuehue.hyprland-dock
 ```
 
 Do not run the standalone and plugin versions together, or two docks will appear.
@@ -160,8 +165,35 @@ Installed copies use `~/.config/hyprland-dock/dock.json`. When running from the 
 | `fullLength` | Fill the screen width, or height for a vertical dock |
 | `reserveSpace` | When `true`, tiled windows stop beside the dock |
 | `autoHide` | Hide the dock until the pointer reaches its screen edge; can also be toggled from the right-click menu |
+| `showOnEmptyWorkspace` | With `autoHide`, keep the dock shown while the current workspace on that screen has no windows (default `true`) |
 | `clickAction` | `focus-or-launch` focuses an existing window; `launch` always starts a new instance |
 | `pinned` | Ordered desktop-entry IDs displayed in the dock |
+
+### Glass effect
+
+The dock draws a translucent tint; the blur behind it comes from Hyprland. Add a layer rule for the `hyprland-dock` namespace.
+
+Hyprland 0.55+ (Lua config):
+
+```lua
+hl.layer_rule({
+    name  = "dock-glass",
+    match = { namespace = "^(hyprland-dock)$" },
+    blur  = true,
+    ignore_alpha = 0.02,
+    no_anim = true, -- the dock animates itself
+})
+```
+
+Older hyprlang config:
+
+```ini
+layerrule = blur, hyprland-dock
+layerrule = ignorealpha 0.02, hyprland-dock
+layerrule = noanim, hyprland-dock
+```
+
+For a more macOS-like look, raise colour saturation behind the glass with `decoration:blur:vibrancy` (e.g. `0.35`). Lower `backgroundOpacity` for clearer glass.
 
 Pinned values are desktop-entry filenames without the `.desktop` suffix. List available IDs with:
 

@@ -1,13 +1,13 @@
 {
-  "iconSize": 42,
-  "magnification": 1.2,
+  "iconSize": 36,
+  "magnification": 1,
   "magnificationRadius": 95,
-  "margin": 10,
-  "backgroundOpacity": 0.88,
+  "margin": 6,
+  "backgroundOpacity": 0.12,
   "position": "bottom",
   "fullLength": false,
-  "reserveSpace": true,
-  "autoHide": false,
+  "reserveSpace": false,
+  "autoHide": true,
   "clickAction": "focus-or-launch",
   "pinned": [
     "org.gnome.Nautilus",
@@ -16,5 +16,6 @@
     "code",
     "obsidian",
     "chatgpt"
-  ]
+  ],
+  "showOnEmptyWorkspace": true
 }

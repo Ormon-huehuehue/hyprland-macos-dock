@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 PanelWindow {
   id: root
@@ -47,7 +48,14 @@ PanelWindow {
     : Math.ceil(iconSize * magnification + 48) + edgeMargin
   readonly property bool keepAutoHideOpen: windowPointer.hovered
     || appPicker.visible || openMenuCount > 0 || dragSource >= 0
-  readonly property bool dockShown: !autoHide || autoHideRevealed
+  // Keep the dock up while this screen's workspace has no windows.
+  readonly property bool showOnEmptyWorkspace: settings.showOnEmptyWorkspace === undefined ? true : settings.showOnEmptyWorkspace
+  readonly property var hyprMonitor: Hyprland.monitorFor(root.screen)
+  readonly property bool screenEmpty: {
+    var ws = hyprMonitor ? hyprMonitor.activeWorkspace : null
+    return !ws || (ws.toplevels.values || []).length === 0
+  }
+  readonly property bool dockShown: !autoHide || autoHideRevealed || (showOnEmptyWorkspace && screenEmpty)
   readonly property real pointerPosition: !pointer.hovered
     ? -10000
     : vertical
@@ -115,7 +123,7 @@ PanelWindow {
   Timer {
     id: hideTimer
 
-    interval: 800
+    interval: 150
     onTriggered: if (root.autoHide && !root.keepAutoHideOpen)
       root.autoHideRevealed = false
   }
@@ -146,33 +154,54 @@ PanelWindow {
       : root.position === "top" ? root.edgeMargin : parent.height - height - root.edgeMargin
     width: root.vertical ? root.iconSize + 24 : parent.width
     height: root.vertical ? parent.height : root.iconSize + 24
-    radius: 20
-    color: Qt.rgba(0.08, 0.09, 0.11, root.backgroundOpacity)
+    radius: 22
+    // macOS-style glass: a thin, slightly light tint over Hyprland's blur (layer rule in
+    // see README), a soft top sheen, a bright hairline rim and a dark outer edge.
+    color: Qt.rgba(0.22, 0.23, 0.26, root.backgroundOpacity)
     border.width: 1
-    border.color: Qt.rgba(1, 1, 1, 0.18)
-    transform: Translate {
-      x: !root.autoHide || root.dockShown
-        ? 0
-        : root.position === "left"
-          ? -(dockBackground.width + root.edgeMargin)
-          : root.position === "right" ? dockBackground.width + root.edgeMargin : 0
-      y: !root.autoHide || root.dockShown
-        ? 0
-        : root.position === "top"
-          ? -(dockBackground.height + root.edgeMargin)
-          : root.position === "bottom" ? dockBackground.height + root.edgeMargin : 0
+    border.color: Qt.rgba(0, 0, 0, 0.35)
+    // One 0..1 "reveal" value drives slide + scale + fade together, so the
+    // motion stays coherent even if the pointer flicks in and out mid-animation.
+    // Show: long smooth deceleration (no bounce). Hide: short ease-in, gets out of the way.
+    property real reveal: !root.autoHide || root.dockShown ? 1 : 0
+    // Subtle: short 16px rise + fade, no scaling. Raise `travel` for a full pull-up.
+    Behavior on reveal {
+      NumberAnimation {
+        duration: root.dockShown ? 200 : 140
+        easing.type: root.dockShown ? Easing.OutCubic : Easing.InQuad
+      }
+    }
+    readonly property real travel: 16
+    readonly property real hiddenShift: (1 - reveal) * travel
 
-      Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-      Behavior on y { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+    opacity: reveal
+    transform: [
+      Translate {
+        x: root.position === "left" ? -dockBackground.hiddenShift : root.position === "right" ? dockBackground.hiddenShift : 0
+        y: root.position === "top" ? -dockBackground.hiddenShift : root.position === "bottom" ? dockBackground.hiddenShift : 0
+      }
+    ]
+
+    // bottom sheen: light catches the lower half of the glass
+    Rectangle {
+      anchors.fill: parent
+      anchors.margins: 1
+      radius: parent.radius - 1
+      gradient: Gradient {
+        GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.0) }
+        GradientStop { position: 0.55; color: Qt.rgba(1, 1, 1, 0.03) }
+        GradientStop { position: 1.0; color: Qt.rgba(1, 1, 1, 0.14) }
+      }
     }
 
+    // faint bright inner rim
     Rectangle {
       anchors.fill: parent
       anchors.margins: 1
       radius: parent.radius - 1
       color: "transparent"
       border.width: 1
-      border.color: Qt.rgba(0, 0, 0, 0.28)
+      border.color: Qt.rgba(1, 1, 1, 0.12)
     }
 
     Grid {
